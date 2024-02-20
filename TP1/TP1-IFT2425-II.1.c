@@ -314,7 +314,9 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 //----------------------------------------------------------
 //----------------------------------------------------------
 
-bool divergence (double x, double y) {
+//Fonction qui vérifie la divergence de la module de z_n
+//Fusionnée dans la fonction mandelbrot(int, int, float**)
+/* bool divergence (double x, double y) {
 
     int NBIterMax = 200, divergence = 2;
     double z_x = x, z_y = y, z_n = 0;
@@ -333,16 +335,19 @@ bool divergence (double x, double y) {
         return false;
 
     }
-}
+}*/
 
+//Fonction qui génère un ensemble de Mandelbrot
 void mandelbrot(int width, int length, float** Graph2D) {
     double x, y;
 
+    //Équation (2) et (3)
     for (int k = 0; k < width; k++) {
         for (int l = 0; l < length; l++) {
             x = 2.0 * (k - width/1.35) / (width - 1.0);
             y = 2.0 * (l - length/2.0) / (length - 1.0);
 
+	    //Vérifier la divergence du module de z_n
             int NBIterMax = 200, divergence = 2, color = 0;
             double z_x = 0, z_y = 0;
 
