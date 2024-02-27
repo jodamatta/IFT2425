@@ -1,6 +1,6 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.1.c
-// author  : Songju Lee(20198117) - 
+// author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0
 // language: C
@@ -316,52 +316,31 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 
 void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
-    int chemin_x[NBIterMax], chemin_y[NBIterMax];
     double x, y;
 
     for (int k = 0; k < width; k++) {
         for (int l = 0; l < length; l++) {
-            x = 2.0 * (k - width/1.35) / (width - 1.0);
-            y = 2.0 * (l - length/2.0) / (length - 1.0);
+            x = 2.0 * (k - width / 1.35) / (width - 1.0);
+            y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
-            int i = 0;
             double z_x = 0, z_y = 0;
-        
-            while (i < NBIterMax && !(sqrt(CARRE(z_x) + CARRE(z_y)) > divergence)) {
+            int i = 0;
+            while (i < NBIterMax && CARRE(z_x) + CARRE(z_y) <= divergence) {
                 double temp_x = CARRE(z_x) - CARRE(z_y) + x;
                 double temp_y = 2 * z_x * z_y + y;
-
-                chemin_x[i] = (temp_x * (width - 1) / 2.0) + width / 1.35;
-                chemin_y[i] = (temp_y * (width - 1) / 2.0) + width / 2.0;
 
                 z_x = temp_x;
                 z_y = temp_y;
 
-                i+=;
+                i++;
             }
 
-            if (i > 1 && sqrt(CARRE(z_x) + CARRE(z_y)) > divergence) {
-                int j = 0;
-
-                while (chemin_x[j] > 0) {
-                    int k = chemin_x[j];
-                    int l = chemin_y[j];
-
-                    if (k < 512 && l <512) {
-                        Graph2D[k][l] += 1;
-                    }
-
-                    j ++;
-                }
-
-            }
-
+            // Assigner la couleur en fonction du nombre d'itérations avant la divergence
+            Graph2D[k][l] = i;
         }
-
-        int chemin_x[NBIterMax];
-        int chemin_y[NBIterMax];
     }
 }
+
 
 
 int main(int argc,char** argv)

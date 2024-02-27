@@ -1,6 +1,6 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.1.c
-// author  : Songju Lee(20198117) - 
+// author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0
 // language: C
@@ -336,7 +336,7 @@ void mandelbrot(int width, int length, float** Graph2D) {
                 double z_module = sqrt(z_n);
 
                 if (z_module > divergence) {
-                    color = 255;                    
+                    color = 255;
                 }
 
                 z_x = temp_x;

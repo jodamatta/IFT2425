@@ -1,6 +1,6 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.1.c
-// author  : Joana da Matta Furtado Ferreira
+// author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 20-02-2024
 // version : 1.0
 // language: C
@@ -65,7 +65,7 @@ int open_display()
 
 /************************************************************************/
 /* FABRIQUE_WINDOW()							*/
-/* Cette fonction crée une fenetre X et l'affiche à l'écran.	        */
+/* Cette fonction crï¿½e une fenetre X et l'affiche ï¿½ l'ï¿½cran.	        */
 /************************************************************************/
 Window fabrique_window(char* nom_fen, int x, int y, int width, int height, int zoom)
 {
@@ -109,7 +109,7 @@ Window fabrique_window(char* nom_fen, int x, int y, int width, int height, int z
 
 /****************************************************************************/
 /* CREE_XIMAGE()							    */
-/* Crée une XImage à partir d'un tableau de float                           */
+/* Crï¿½e une XImage ï¿½ partir d'un tableau de float                           */
 /* L'image peut subir un zoom.						    */
 /****************************************************************************/
 XImage* cree_Ximage(float** mat, int z, int length, int width)
@@ -325,6 +325,20 @@ void Egalise(float** img, int lgth, int wdth, int thresh)
     for (i = 0; i < lgth; i++) for (j = 0; j < wdth; j++)
         img[i][j] = FnctRept[(int)(img[i][j])];
 }
+// FONCTIONS AUXILIAIRES _ METHODE DE NEWTON
+
+double f(double y[], int N, double c) {
+    double numerator = 0.0;
+    double denominator = 0.0;
+    double sum_log_y = 0.0;
+
+    for (int i = 0; i < N; ++i) {
+        numerator += pow(y[i], c) * log(y[i]);
+        denominator += pow(y[i], c);
+        sum_log_y += log(y[i]);
+    }
+    return numerator / denominator - 1.0 / c - sum_log_y / N;
+}
 
 double derivee_analytique(double y[], int N, double c) {
     double numerator = 0, denominator = 0;
@@ -384,7 +398,7 @@ int main(int argc, char** argv)
     // PROGRAMME ---------------------------------------------------------------------
     //--------------------------------------------------------------------------------
 
-     //Affichage dégradé de niveaux de gris dans Graph2D
+     //Affichage dï¿½gradï¿½ de niveaux de gris dans Graph2D
     for (int i = 0; i < length; i++) for (int j = 0; j < width; j++) Graph2D[i][j] = j / 2.0;
 
 

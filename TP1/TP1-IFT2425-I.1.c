@@ -1,6 +1,6 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.1.c
-// author  : Joana da Matta Furtado Ferreira
+// author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 29-01-2024
 // version : 1.0
 // language: C
@@ -61,7 +61,7 @@ int open_display()
 
 /************************************************************************/
 /* FABRIQUE_WINDOW()							*/
-/* Cette fonction crée une fenetre X et l'affiche à l'écran.	        */
+/* Cette fonction crï¿½e une fenetre X et l'affiche ï¿½ l'ï¿½cran.	        */
 /************************************************************************/
 Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 {
@@ -105,7 +105,7 @@ Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 
 /****************************************************************************/
 /* CREE_XIMAGE()							    */
-/* Crée une XImage à partir d'un tableau de float                           */
+/* Crï¿½e une XImage ï¿½ partir d'un tableau de float                           */
 /* L'image peut subir un zoom.						    */
 /****************************************************************************/
 XImage* cree_Ximage(float** mat,int z,int length,int width)
@@ -307,6 +307,8 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
    img[i][j]=FnctRept[(int)(img[i][j])];
 }
 
+// FONCTIONS AUXILIAIRES _ METHODE DE NEWTON
+
 double f(double y[], int N, double c) {
     double numerator = 0.0;
     double denominator = 0.0;
@@ -329,7 +331,7 @@ double methode_newtonA(double y[], int N, double initial_guess, double tol) {
 
     for (int i = 0; i < 100; ++i) {
         double f_c_n = f(y, N, c_n);
-        double f_prime_c_n = derivativeA(y, N, c_n, EPSILON);
+        double f_prime_c_n = derivativeA(y, N, c_n, 1e-5);
         c_n = c_n - f_c_n / f_prime_c_n;
 
         if (fabs(f_c_n) < tol) {
@@ -371,7 +373,7 @@ int main(int argc,char** argv)
 // PROGRAMME ---------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
- //Affichage dégradé de niveaux de gris dans Graph2D
+ //Affichage dï¿½gradï¿½ de niveaux de gris dans Graph2D
  for(int i=0;i<length;i++) for(int j=0;j<width;j++) Graph2D[i][j]=j/2.0;
 
   

@@ -1,6 +1,6 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.1.c
-// author  : Songju Lee(20198117) - 
+// author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0
 // language: C
@@ -321,47 +321,37 @@ void mandelbrot(int width, int length, float** Graph2D) {
 
     for (int k = 0; k < width; k++) {
         for (int l = 0; l < length; l++) {
-            x = 2.0 * (k - width/1.35) / (width - 1.0);
-            y = 2.0 * (l - length/2.0) / (length - 1.0);
+            x = 2.0 * (k - width / 1.35) / (width - 1.0);
+            y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
             int i = 0;
             double z_x = 0, z_y = 0;
-        
-            while (i < NBIterMax && !(sqrt(CARRE(z_x) + CARRE(z_y)) > divergence)) {
+
+            while (i < NBIterMax && CARRE(z_x) + CARRE(z_y) <= divergence) {
                 double temp_x = CARRE(z_x) - CARRE(z_y) + x;
                 double temp_y = 2 * z_x * z_y + y;
 
                 chemin_x[i] = (temp_x * (width - 1) / 2.0) + width / 1.35;
-                chemin_y[i] = (temp_y * (width - 1) / 2.0) + width / 2.0;
+                chemin_y[i] = (temp_y * (length - 1) / 2.0) + length / 2.0;
 
                 z_x = temp_x;
                 z_y = temp_y;
 
-                i+=;
+                i++;
             }
 
-            if (i > 1 && sqrt(CARRE(z_x) + CARRE(z_y)) > divergence) {
-                int j = 0;
+            for (int j = 0; j < i; j++) {
+                int x_index = chemin_x[j];
+                int y_index = chemin_y[j];
 
-                while (chemin_x[j] > 0) {
-                    int k = chemin_x[j];
-                    int l = chemin_y[j];
-
-                    if (k > 0 && k < 512 && l > 0 && l <512) {
-                        Graph2D[k][l] += 1;
-                    }
-
-                    j ++;
+                if (x_index >= 0 && x_index < width && y_index >= 0 && y_index < length) {
+                    Graph2D[x_index][y_index]++;
                 }
-
             }
-
         }
-
-        int chemin_x[NBIterMax];
-        int chemin_y[NBIterMax];
     }
 }
+
 
 
 int main(int argc,char** argv)
