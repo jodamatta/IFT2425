@@ -1,5 +1,5 @@
 //------------------------------------------------------
-// module  : Tp-IFT2425-I.1.c
+// module  : Tp-IFT2425-II.2.c
 // author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0
@@ -316,7 +316,6 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 
 void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
-    int chemin_x[NBIterMax], chemin_y[NBIterMax];
     double x, y;
 
     for (int k = 0; k < width; k++) {
@@ -324,15 +323,11 @@ void mandelbrot(int width, int length, float** Graph2D) {
             x = 2.0 * (k - width / 1.35) / (width - 1.0);
             y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
-            int i = 0;
             double z_x = 0, z_y = 0;
-
+            int i = 0;
             while (i < NBIterMax && CARRE(z_x) + CARRE(z_y) <= divergence) {
                 double temp_x = CARRE(z_x) - CARRE(z_y) + x;
                 double temp_y = 2 * z_x * z_y + y;
-
-                chemin_x[i] = (temp_x * (width - 1) / 2.0) + width / 1.35;
-                chemin_y[i] = (temp_y * (length - 1) / 2.0) + length / 2.0;
 
                 z_x = temp_x;
                 z_y = temp_y;
@@ -340,14 +335,8 @@ void mandelbrot(int width, int length, float** Graph2D) {
                 i++;
             }
 
-            for (int j = 0; j < i; j++) {
-                int x_index = chemin_x[j];
-                int y_index = chemin_y[j];
-
-                if (x_index >= 0 && x_index < width && y_index >= 0 && y_index < length) {
-                    Graph2D[x_index][y_index]++;
-                }
-            }
+            // Assigner la couleur en fonction du nombre d'itérations avant la divergence
+            Graph2D[k][l] = i;
         }
     }
 }
@@ -408,7 +397,7 @@ Egalise(Graph2D,length,width,0.0);
  x_ppicture=cree_Ximage(Graph2D,zoom,length,width);
 
  //Sauvegarde
- SaveImagePgm((char*)"",(char*)"FractalMandelbrot_QII.2",Graph2D,length,width);
+ SaveImagePgm((char*)"",(char*)"FractalMandelbrot_QII.3",Graph2D,length,width);
  printf("\n\n Pour quitter,appuyer sur la barre d'espace");
  fflush(stdout);
 
@@ -439,4 +428,3 @@ Egalise(Graph2D,length,width,0.0);
  return 0;
  }
  
-
