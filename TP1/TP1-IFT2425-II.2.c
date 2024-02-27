@@ -318,8 +318,8 @@ void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
     double x, y;
 
-    for (int k = 0; k < width; k++) {
-        for (int l = 0; l < length; l++) {
+    for (int k = 0; k < width; k += 0.1) {
+        for (int l = 0; l < length; l += 0.1) {
             x = 2.0 * (k - width / 1.35) / (width - 1.0);
             y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
