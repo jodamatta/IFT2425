@@ -316,7 +316,7 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 
 void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
-    double chemin_x[NBIterMax], chemin_y[NBIterMax];
+    int chemin_x[NBIterMax], chemin_y[NBIterMax];
     double x, y;
 
     for (double k = 0; k < width; k += 0.1) {
@@ -408,7 +408,7 @@ Egalise(Graph2D,length,width,0.0);
  x_ppicture=cree_Ximage(Graph2D,zoom,length,width);
 
  //Sauvegarde
- SaveImagePgm((char*)"",(char*)"FractalMandelbrot_QII.2",Graph2D,length,width);
+ SaveImagePgm((char*)"",(char*)"FractalMandelbrot_QII.3",Graph2D,length,width);
  printf("\n\n Pour quitter,appuyer sur la barre d'espace");
  fflush(stdout);
 
@@ -439,4 +439,3 @@ Egalise(Graph2D,length,width,0.0);
  return 0;
  }
  
-
