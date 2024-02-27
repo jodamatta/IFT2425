@@ -316,11 +316,11 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 
 void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
-    int chemin_x[NBIterMax], chemin_y[NBIterMax];
+    double chemin_x[NBIterMax], chemin_y[NBIterMax];
     double x, y;
 
-    for (int k = 0; k < width; k++) {
-        for (int l = 0; l < length; l++) {
+    for (double k = 0; k < width; k += 0.1) {
+        for (double l = 0; l < length; l += 0.1) {
             x = 2.0 * (k - width / 1.35) / (width - 1.0);
             y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
