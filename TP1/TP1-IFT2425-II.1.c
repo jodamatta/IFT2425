@@ -1,5 +1,5 @@
 //------------------------------------------------------
-// module  : Tp-IFT2425-I.1.c
+// module  : Tp-IFT2425-II.1.c
 // author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0

@@ -1,12 +1,12 @@
 //------------------------------------------------------
-// module  : Tp-IFT2425-I.1.c
+// module  : Tp-IFT2425-II.2.c
 // author  : Songju Lee(20198117) - Joana da Matta Furtado Ferreira (20288550)
 // date    : 09-02-2024
 // version : 1.0
 // language: C
 // note    :
 //------------------------------------------------------
-//
+//  
 
 //------------------------------------------------
 // FICHIERS INCLUS -------------------------------
@@ -95,8 +95,8 @@ Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 
   gc=XCreateGC(display,win,0,NULL);
 
-  XSelectInput(display,win,ExposureMask|KeyPressMask|ButtonPressMask|
-               ButtonReleaseMask|ButtonMotionMask|PointerMotionHintMask|
+  XSelectInput(display,win,ExposureMask|KeyPressMask|ButtonPressMask| 
+               ButtonReleaseMask|ButtonMotionMask|PointerMotionHintMask| 
                StructureNotifyMask);
 
   XMapWindow(display,win);
@@ -129,14 +129,14 @@ XImage* cree_Ximage(float** mat,int z,int length,int width)
         exit(-1); }
 
   for(lig=0;lig<lgth;lig=lig+z) for(col=0;col<wdth;col=col+z)
-   {
+   { 
     pix=(unsigned char)mat[lig/z][col/z];
     for(zoom_lig=0;zoom_lig<z;zoom_lig++) for(zoom_col=0;zoom_col<z;zoom_col++)
-      {
+      { 
        dat[((lig+zoom_lig)*wdth*4)+((4*(col+zoom_col))+0)]=pix;
        dat[((lig+zoom_lig)*wdth*4)+((4*(col+zoom_col))+1)]=pix;
        dat[((lig+zoom_lig)*wdth*4)+((4*(col+zoom_col))+2)]=pix;
-       dat[((lig+zoom_lig)*wdth*4)+((4*(col+zoom_col))+3)]=pix;
+       dat[((lig+zoom_lig)*wdth*4)+((4*(col+zoom_col))+3)]=pix; 
        }
     }
   } /*--------------------------------------------------------*/
@@ -155,16 +155,16 @@ XImage* cree_Ximage(float** mat,int z,int length,int width)
         exit(-1); }
 
   for(lig=0;lig<(lgth*z);lig=lig+z) for(col=0;col<(wdth*z);col=col+z)
-   {
+   {  
     somme=0.0;
     for(zoom_lig=0;zoom_lig<z;zoom_lig++) for(zoom_col=0;zoom_col<z;zoom_col++)
      somme+=mat[lig+zoom_lig][col+zoom_col];
-
-     somme/=(z*z);
+           
+     somme/=(z*z);    
      dat[((lig/z)*wdth*4)+((4*(col/z))+0)]=(unsigned char)somme;
      dat[((lig/z)*wdth*4)+((4*(col/z))+1)]=(unsigned char)somme;
      dat[((lig/z)*wdth*4)+((4*(col/z))+2)]=(unsigned char)somme;
-     dat[((lig/z)*wdth*4)+((4*(col/z))+3)]=(unsigned char)somme;
+     dat[((lig/z)*wdth*4)+((4*(col/z))+3)]=(unsigned char)somme; 
    }
   } /*--------------------------------------------------------*/
 
@@ -211,8 +211,8 @@ void free_fmatrix_2d(float** pmat)
   delete[] pmat;}
 
 //----------------------------------------------------------
-// Sauvegarde de l'image de nom <name> au format pgm
-//----------------------------------------------------------
+// Sauvegarde de l'image de nom <name> au format pgm                        
+//----------------------------------------------------------                
 void SaveImagePgm(char* bruit,char* name,float** mat,int lgth,int wdth)
 {
  int i,j;
@@ -226,8 +226,8 @@ void SaveImagePgm(char* bruit,char* name,float** mat,int lgth,int wdth)
 
   //--ouverture fichier--
   fic=fopen(buff,"wb");
-    if (fic==NULL)
-        { printf("Probleme dans la sauvegarde de %s",buff);
+    if (fic==NULL) 
+        { printf("Probleme dans la sauvegarde de %s",buff); 
           exit(-1); }
   printf("\n Sauvegarde de %s au format pgm\n",buff);
 
@@ -238,11 +238,11 @@ void SaveImagePgm(char* bruit,char* name,float** mat,int lgth,int wdth)
   fprintf(fic,"\n255\n");
 
   //--enregistrement--
-  for(i=0;i<lgth;i++) for(j=0;j<wdth;j++)
+  for(i=0;i<lgth;i++) for(j=0;j<wdth;j++) 
 	fprintf(fic,"%c",(char)mat[i][j]);
-
+   
   //--fermeture fichier--
-   fclose(fic);
+   fclose(fic); 
 }
 
 //----------------------------------------------------------
@@ -261,10 +261,10 @@ void Recal(float** mat,int lgth,int wdth)
 
   //plus min
   for(i=0;i<lgth;i++) for(j=0;j<wdth;j++) mat[i][j]-=min;
-
+ 
   //Recherche du max
   max=mat[0][0];
-  for(i=0;i<lgth;i++) for(j=0;j<wdth;j++)
+  for(i=0;i<lgth;i++) for(j=0;j<wdth;j++) 
     if (mat[i][j]>max) max=mat[i][j];
 
   //Recalibre la matrice
@@ -273,7 +273,7 @@ void Recal(float** mat,int lgth,int wdth)
 }
 
 //----------------------------------------------------------
-//  Egalisation Histogramme
+//  Egalisation Histogramme         
 //----------------------------------------------------------
 void Egalise(float** img,int lgth,int wdth,int thresh)
 {
@@ -289,8 +289,8 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
  nb=0;
  for(i=0;i<lgth;i++) for(j=0;j<wdth;j++)
     { tmp=img[i][j];
-      if (tmp>thresh) { HistoNg[(int)(tmp)]++; nb++; } }
-
+      if (tmp>thresh) { HistoNg[(int)(tmp)]++; nb++; } } 
+ 
  for(i=0;i<256;i++)  HistoNg[i]/=(float)(nb);
 
  //Calcul Fnct Repartition
@@ -314,72 +314,47 @@ void Egalise(float** img,int lgth,int wdth,int thresh)
 //----------------------------------------------------------
 //----------------------------------------------------------
 
-void mandelbrot3(int width, int length, float** Graph2D) {
-    int NBIterMax = 200, divergence = 2;
-    int chemin_x[NBIterMax], chemin_y[NBIterMax];
-    double x, y;
-
-    for (double k = 0; k < width; k += 0.1) {
-        for (double l = 0; l < length; l += 0.1) {
-            x = 2.0 * (k - width / 1.35) / (width - 1.0);
-            y = 2.0 * (l - length / 2.0) / (length - 1.0);
-
-            int i = 0;
-            double z_x = 0, z_y = 0;
-
-            while (i < NBIterMax && CARRE(z_x) + CARRE(z_y) <= divergence) {
-                double temp_x = CARRE(z_x) - CARRE(z_y) + x;
-                double temp_y = 2 * z_x * z_y + y;
-
-                chemin_x[i] = (temp_x * (width - 1) / 2.0) + width / 1.35;
-                chemin_y[i] = (temp_y * (length - 1) / 2.0) + length / 2.0;
-
-                z_x = temp_x;
-                z_y = temp_y;
-
-                i++;
-            }
-
-            for (int j = 0; j < i; j++) {
-                int x_index = chemin_x[j];
-                int y_index = chemin_y[j];
-
-                if (x_index >= 0 && x_index < width && y_index >= 0 && y_index < length) {
-                    Graph2D[x_index][y_index]++;
-                }
-            }
-        }
-    }
-}
-
 void mandelbrot(int width, int length, float** Graph2D) {
     int NBIterMax = 200, divergence = 2;
-    double x, y;
-
+    double* chemin_x = new double[NBIterMax];
+    double* chemin_y = new double[NBIterMax];
+    
+    double x,y;
     for (double k = 0; k < width; k += 0.1) {
         for (double l = 0; l < length; l += 0.1) {
             x = 2.0 * (k - width / 1.35) / (width - 1.0);
             y = 2.0 * (l - length / 2.0) / (length - 1.0);
 
             double z_x = 0, z_y = 0;
-            int i = 0;
-            while (i < NBIterMax && CARRE(z_x) + CARRE(z_y) <= divergence) {
+            for (int i = 0; i < NBIterMax; i++) {
                 double temp_x = CARRE(z_x) - CARRE(z_y) + x;
                 double temp_y = 2 * z_x * z_y + y;
 
+		if (CARRE(z_x) + CARRE(z_y) > divergence) {
+		  for (int j = 0; j < i; j++) {
+
+		    int x_index = (chemin_x[j] * (width - 1) / 2.0) + width / 1.25;
+		    int y_index = (chemin_y[j] * (length - 1) / 2.0) + length / 2.0;
+
+
+		    if (x_index >= 0 && x_index < width && y_index >= 0 && y_index < length) {
+		      Graph2D[x_index][y_index] ++;
+		    }
+		  }
+		  
+		  break;
+		  
+	        } else {
                 z_x = temp_x;
                 z_y = temp_y;
+		}
 
-                i++;
+		chemin_x[i] = z_x;
+		chemin_y[i] = z_y;
             }
-
-            // Assigner la couleur en fonction du nombre d'itérations avant la divergence
-            Graph2D[(int)k][(int)l] = i;
         }
     }
 }
-
-
 
 
 
@@ -393,18 +368,18 @@ int main(int argc,char** argv)
  //------------
  XEvent ev;
  Window win_ppicture;
- XImage *x_ppicture;
- char   nomfen_ppicture[100];
+ XImage *x_ppicture; 
+ char   nomfen_ppicture[100]; 
  int    length,width;
 
  length=width=512;
- float** Graph2D=fmatrix_allocate_2d(length,width);
+ float** Graph2D=fmatrix_allocate_2d(length,width); 
  flag_graph=1;
  zoom=1;
 
  //Init
  for(i=0;i<length;i++) for(j=0;j<width;j++) Graph2D[i][j]=0.0;
-
+ 
 //--------------------------------------------------------------------------------
 // PROGRAMME ---------------------------------------------------------------------
 //--------------------------------------------------------------------------------
@@ -412,18 +387,18 @@ int main(int argc,char** argv)
  //Affichage dégradé de niveaux de gris dans Graph2D
  for(int i=0;i<length;i++) for(int j=0;j<width;j++) Graph2D[i][j]=j/2.0;
 
-
+  
    //---------------------------
    //Algorithme NEWTON
    //---------------------------
 
    mandelbrot(512, 512, Graph2D);
-
+ 
 
 //--------------------------------------------------------------------------------
 //---------------- visu sous XWINDOW ---------------------------------------------
 //--------------------------------------------------------------------------------
-
+  
 //Recalage-Egalise le graph
 Recal(Graph2D,length,width);
 Egalise(Graph2D,length,width,0.0);
@@ -447,11 +422,11 @@ Egalise(Graph2D,length,width,0.0);
       XNextEvent(display,&ev);
        switch(ev.type)
         {
-	 case Expose:
-         XPutImage(display,win_ppicture,gc,x_ppicture,0,0,0,0,x_ppicture->width,x_ppicture->height);
+	 case Expose:   
+         XPutImage(display,win_ppicture,gc,x_ppicture,0,0,0,0,x_ppicture->width,x_ppicture->height);  
          break;
 
-         case KeyPress:
+         case KeyPress: 
          XDestroyImage(x_ppicture);
 
          XFreeGC(display,gc);
@@ -461,11 +436,10 @@ Egalise(Graph2D,length,width,0.0);
          }
    if (!flag_graph) break;
      }
- }
-
- //retour sans probleme
+ } 
+       
+ //retour sans probleme 
  printf("\n Fini... \n\n\n");
  return 0;
  }
-
-
+ 
