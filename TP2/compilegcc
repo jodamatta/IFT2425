@@ -1,4 +1,4 @@
 echo
 echo compilation du programme ${a=${1}.c}
 
-gcc -o $1 $a -lm -lX11 
+gcc -o $1 $a -lm -lX11

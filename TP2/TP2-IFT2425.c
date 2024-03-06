@@ -50,7 +50,7 @@ int open_display()
 
 /************************************************************************/
 /* FABRIQUE_WINDOW()							*/
-/* Cette fonction crée une fenetre X et l'affiche à l'écran.	        */
+/* Cette fonction crï¿½e une fenetre X et l'affiche ï¿½ l'ï¿½cran.	        */
 /************************************************************************/
 Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 {
@@ -94,7 +94,7 @@ Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 
 /****************************************************************************/
 /* CREE_XIMAGE()							    */
-/* Crée une XImage à partir d'un tableau de float  (zoom possible)          */
+/* Crï¿½e une XImage ï¿½ partir d'un tableau de float  (zoom possible)          */
 /****************************************************************************/
 XImage* cree_Ximage(float** mat,int z,int length,int width)
 {
@@ -162,7 +162,7 @@ XImage* cree_Ximage(float** mat,int z,int length,int width)
 
 /****************************************************************************/
 /* CREE_XIMAGECOUL()							    */
-/* Crée une XImage à partir d'un tableau 3d de float  (zoom possible)       */
+/* Crï¿½e une XImage ï¿½ partir d'un tableau 3d de float  (zoom possible)       */
 /****************************************************************************/
 XImage* cree_XimageCoul(float*** matRVB,int z,int length,int width)
 {
@@ -240,7 +240,7 @@ XImage* cree_XimageCoul(float*** matRVB,int z,int length,int width)
 
 /****************************************************************************/
 /* CREE_XIMAGEWITHMVT()							    */
-/* Crée une XImage à partir d'une Image N&B et incruste son vecteur de Mvt  */
+/* Crï¿½e une XImage ï¿½ partir d'une Image N&B et incruste son vecteur de Mvt  */
 /****************************************************************************/
 XImage* cree_XimageWithMvt(float** matImg,float** vctMvt,int z,int length,int width)
 {
@@ -588,8 +588,6 @@ void ConvertVelocityFieldInAroowField(float*** SeqImgOptFlot,float*** Vx,float**
 //--- Vos Fonctions Ici ---//
 //-------------------------//
 
-
-
 //----------------------------------------------------------
 //----------------------------------------------------------
 // PROGRAMME PRINCIPAL -------------------------------------
@@ -670,20 +668,49 @@ int main(int argc,char** argv)
  //------------------------------------------------------------
  // Estimation du Flux Optique de Horn & Schunk [par Jacobi]
  //
- // L'image 1 et 2 sont enregistrée dans les tableau 2D Img1[][] et Img2[][]
- // Ix, Iy, It sont des tableaux 2D de même dimension que l'image qui ont été allouées
- // VxM, VyM  Vecteur Vx & Vy moyenné aussi
+ // L'image 1 et 2 sont enregistrï¿½e dans les tableau 2D Img1[][] et Img2[][]
+ // Ix, Iy, It sont des tableaux 2D de mï¿½me dimension que l'image qui ont ï¿½tï¿½ allouï¿½es
+ // VxM, VyM  Vecteur Vx & Vy moyennï¿½ aussi
  // OptFl_Vx, OptFl_Vy qui contiendra le flot optique 
  //
  //-----------------------------------------------------------
  printf("\n\n Jacobi Iterations :\n");
  
  //Programmer ici ........
+    for(int iter = 0; iter < NBITER; iter++) {
+        printf("\r Iteration [%d/%d]", iter+1, NBITER);
+        fflush(stdout);
 
+        // Calcul des dÃ©rivÃ©es spatiales et temporelles pour chaque pixel
+        for(i = 0; i < length - 1; i++) {
+            for(j = 0; j < width - 1; j++) {
+                Ix[i][j] = (Img1[i][j+1] - Img1[i][j] + Img1[i+1][j+1] - Img1[i+1][j]) / 4.0;
+                Iy[i][j] = (Img1[i+1][j] - Img1[i][j] + Img1[i+1][j+1] - Img1[i][j+1]
+                            + Img2[i+1][j] - Img2[i][j] + Img2[i+1][j+1] - Img2[i][j+1]) / 4.0;
+                It[i][j] = (Img2[i][j] - Img1[i][j] + Img2[i+1][j] - Img1[i+1][j]
+                            + Img2[i][j+1] - Img1[i][j+1] + Img2[i+1][j+1] - Img1[i+1][j+1]) / 4.0;
+            }
+        }
 
+        // Calcul des mises Ã  jour du flot optique pour chaque pixel
+        for(i = 1; i < length-1; i++) {
+            for(j = 1; j < width-1; j++) {
+                OptFl_Vx[iter][i][j] = (OptFl_Vx[iter][i-1][j] + OptFl_Vx[iter][i+1][j]
+                                        + OptFl_Vx[iter][i][j+1] + OptFl_Vx[iter][i][j-1]) / 6.0
+                                       + (OptFl_Vx[iter][i-1][j-1] + OptFl_Vx[iter][i-1][j+1]
+                                          + OptFl_Vx[iter][i+1][j+1] + OptFl_Vx[iter][i+1][j-1]) / 12.0
+                                       - Ix[i][j] * (Ix[i][j]*OptFl_Vx[iter][i][j] + Iy[i][j]*OptFl_Vy[iter][i][j] + It[i][j])
+                                         / (alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
 
-
-
+                OptFl_Vy[iter][i][j] = (OptFl_Vy[iter][i-1][j] + OptFl_Vy[iter][i+1][j]
+                                        + OptFl_Vy[iter][i][j+1] + OptFl_Vy[iter][i][j-1]) / 6.0
+                                       + (OptFl_Vy[iter][i-1][j-1] + OptFl_Vy[iter][i-1][j+1]
+                                          + OptFl_Vy[iter][i+1][j+1] + OptFl_Vy[iter][i+1][j-1]) / 12.0
+                                       - Iy[i][j] * (Ix[i][j]*OptFl_Vx[iter][i][j] + Iy[i][j]*OptFl_Vy[iter][i][j] + It[i][j])
+                                         / (alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
+            }
+        }
+    }
 
 
 
