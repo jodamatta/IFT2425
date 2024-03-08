@@ -684,7 +684,8 @@ int main(int argc,char** argv)
         // Calcul des dérivées spatiales et temporelles pour chaque pixel
         for(i = 0; i < length - 1; i++) {
             for(j = 0; j < width - 1; j++) {
-                Ix[i][j] = (Img1[i][j+1] - Img1[i][j] + Img1[i+1][j+1] - Img1[i+1][j]) / 4.0;
+                Ix[i][j] = (Img1[i][j+1] - Img1[i][j] + Img1[i+1][j+1] - Img1[i+1][j]
+			    + Img2[i][j+1] - Img[i][j] + Img2[i+1][j+1] - Img2[i+1][j]) / 4.0;
                 Iy[i][j] = (Img1[i+1][j] - Img1[i][j] + Img1[i+1][j+1] - Img1[i][j+1]
                             + Img2[i+1][j] - Img2[i][j] + Img2[i+1][j+1] - Img2[i][j+1]) / 4.0;
                 It[i][j] = (Img2[i][j] - Img1[i][j] + Img2[i+1][j] - Img1[i+1][j]
