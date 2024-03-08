@@ -588,6 +588,20 @@ void ConvertVelocityFieldInAroowField(float*** SeqImgOptFlot,float*** Vx,float**
 //--- Vos Fonctions Ici ---//
 //-------------------------//
 
+void moy_deplacement(int length, int width) {
+  double** v_x = new double[i][j];
+  double** v_y = new double[i][j];
+
+  for (int i = 1; i < length - 1; i++) {
+    for (int j = 1; j < width - 1; j++) {
+      v[i][j] = (v[i-1][j] + v[i+1][j] + v[j][j+1] + v[i][j-1])/6.0 + (v[i-1][j-1]+v[i-1][j+1]v[i+1][j+1]+v[i+1][j-1])/12.0
+
+      v_x[i][j] = v[i][j];
+      v_y[i][j] = v[i][j];
+    }
+  }
+}
+
 //----------------------------------------------------------
 //----------------------------------------------------------
 // PROGRAMME PRINCIPAL -------------------------------------
