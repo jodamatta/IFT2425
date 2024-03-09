@@ -589,9 +589,8 @@ void ConvertVelocityFieldInAroowField(float*** SeqImgOptFlot,float*** Vx,float**
 //-------------------------//
 
 // Equation (5)
-float vecteurMoyenne (float** v, int length, int width) {
-  return(v[i][j] = ( v[i-1][j] + v[i+1][j] + v[i][j+1] + v[i][j-1])/6.0 
-                  + (v[i-1][j-1] + v[i-1][j+1] + v[i+1][j+1] + v[i+1][j-1])/12.0);
+float vecteurMoyenne (float** v, int i, int j) {
+  return (v[i-1][j] + v[i+1][j] + v[i][j+1] + v[i][j-1])/6.0 + (v[i-1][j-1] + v[i-1][j+1] + v[i+1][j+1] + v[i+1][j-1])/12.0;
 }
 
 //----------------------------------------------------------
@@ -661,14 +660,14 @@ int main(int argc,char** argv)
     
     //> Rempli OptFlotSequence (apr une seq. de flot optique aleatoire)
     //> les septs lignes suivantes sont a mettre en commentaire
-    for(k=0;k<NBITER;k++) 
+    /*for(k=0;k<NBITER;k++)
        { printf("\r  > Iteration > [%d/%d] ",k,NBITER);
          float posx=0.3*cos(3.0*3.14*k/NBITER);
          float posy=0.3*sin(3.0*3.14*k/NBITER);
          for(i=5;i<length-5;i++) for(j=5;j<width-5;j++)
 	    {  OptFl_Vx[k][i][j]=posx;
 	       OptFl_Vy[k][i][j]=posy; } }
-
+    */
  
 
  //------------------------------------------------------------
@@ -681,55 +680,35 @@ int main(int argc,char** argv)
  //
  //-----------------------------------------------------------
  printf("\n\n Jacobi Iterations :\n");
+
+    // Equation (6)
+    for (i = 1; i < length-1; i++) {
+        for (j = 1; j < width-1; j++) {
+            Ix[i][j] = (Img1[i][j+1] - Img1[i][j] + Img1[i+1][j+1] - Img1[i+1][j] + Img2[i][j+1] - Img2[i][j] + Img2[i+1][j+1] - Img2[i+1][j]) / 4.0;
+            Iy[i][j] = (Img1[i+1][j] - Img1[i][j] + Img1[i+1][j+1] - Img1[i][j+1] + Img2[i+1][j] - Img2[i][j] + Img2[i+1][j+1] - Img2[i][j+1]) / 4.0;
+            It[i][j] = (Img2[i][j] - Img1[i][j] + Img2[i+1][j] - Img1[i+1][j] + Img2[i][j+1] - Img1[i][j+1] + Img2[i+1][j+1] - Img1[i+1][j+1]) / 4.0;
+        }
+    }
  
  //Programmer ici ........
-    for(int iter = 0; iter < NBITER; iter++) {
+    for(int iter = 0; iter < NBITER - 1; iter++) {
         printf("\r Iteration [%d/%d]", iter+1, NBITER);
         fflush(stdout);
-
-        // Equation (6)
-        // Calcul des dérivées spatiales et temporelles pour chaque pixel
-        for(i = 0; i < length - 1; i++) {
-            for(j = 0; j < width - 1; j++) {
-                Ix[i][j] = (Img1[i][j+1] - Img1[i][j] + Img1[i+1][j+1] - Img1[i+1][j]
-                            + Img2[i][j+1] - Img2[i][j] + Img2[i+1][j+1] - Img2[i+1][j]) / 4.0;
-                Iy[i][j] = (Img1[i+1][j] - Img1[i][j] + Img1[i+1][j+1] - Img1[i][j+1]
-                            + Img2[i+1][j] - Img2[i][j] + Img2[i+1][j+1] - Img2[i][j+1]) / 4.0;
-                It[i][j] = (Img2[i][j] - Img1[i][j] + Img2[i+1][j] - Img1[i+1][j]
-                            + Img2[i][j+1] - Img1[i][j+1] + Img2[i+1][j+1] - Img1[i+1][j+1]) / 4.0;
-            }
-        }
 
         // Calcul des mises à jour du flot optique pour chaque pixel
         for(i = 1; i < length-1; i++) {
             for(j = 1; j < width-1; j++) {
 
-              VxM[i][j] = vecteurMoyenne(OptFl_Vx[k], i, j);
-              VyM[i][j] = vecteurMoyenne(OptFl_Vy[k], i, j);
+              // Equation (5) dans vecteurMoyenne
+              VxM[i][j] = vecteurMoyenne(OptFl_Vx[iter], i, j);
+              VyM[i][j] = vecteurMoyenne(OptFl_Vy[iter], i, j);
 
-              float temp = (Ix[i][j]*OptFl_Vx[iter][i][j] + Iy[i][j]*OptFl_Vy[iter][i][j] + It[i][j])
-                          /(alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
+                float temp = (Ix[i][j]*VxM[i][j] + Iy[i][j]*VyM[i][j] + It[i][j])
+                             /(alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
 
               // Equation (4)
               OptFl_Vx[iter + 1][i][j] = VxM[i][j] - Ix[i][j] * temp;
               OptFl_Vy[iter + 1][i][j] = VyM[i][j] - Iy[i][j] * temp;
-
-
-              /***
-              OptFl_Vx[iter][i][j] = (OptFl_Vx[iter][i-1][j] + OptFl_Vx[iter][i+1][j]
-                                      + OptFl_Vx[iter][i][j+1] + OptFl_Vx[iter][i][j-1]) / 6.0
-                                      + (OptFl_Vx[iter][i-1][j-1] + OptFl_Vx[iter][i-1][j+1]
-                                      + OptFl_Vx[iter][i+1][j+1] + OptFl_Vx[iter][i+1][j-1]) / 12.0
-                                      - Ix[i][j] * (Ix[i][j]*OptFl_Vx[iter][i][j] + Iy[i][j]*OptFl_Vy[iter][i][j] + It[i][j])
-                                      / (alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
-
-              OptFl_Vy[iter][i][j] = (OptFl_Vy[iter][i-1][j] + OptFl_Vy[iter][i+1][j]
-                                      + OptFl_Vy[iter][i][j+1] + OptFl_Vy[iter][i][j-1]) / 6.0
-                                      + (OptFl_Vy[iter][i-1][j-1] + OptFl_Vy[iter][i-1][j+1]
-                                      + OptFl_Vy[iter][i+1][j+1] + OptFl_Vy[iter][i+1][j-1]) / 12.0
-                                      - Iy[i][j] * (Ix[i][j]*OptFl_Vx[iter][i][j] + Iy[i][j]*OptFl_Vy[iter][i][j] + It[i][j])
-                                      / (alpha*alpha + Ix[i][j]*Ix[i][j] + Iy[i][j]*Iy[i][j]);
-              ***/
 
             }
         }
