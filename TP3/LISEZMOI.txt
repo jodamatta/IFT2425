@@ -1,0 +1,2 @@
+Pour compiler le programme 
+>  ./compilegcc TP3-IFT2425-I
