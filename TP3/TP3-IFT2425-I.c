@@ -247,6 +247,18 @@ float recursivePairSum(float* arr, int left, int right) {
     return recursivePairSum(arr, left, mid) + recursivePairSum(arr, mid + 1, right);
 }
 
+float kahanSum(float* arr, int size) {
+    float sum = 0.0f;
+    float c = 0.0f;
+    for (int i = 0; i < size; i++) {
+        float y = arr[i] - c;
+        float t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return sum;
+}
+
 //----------------------------------------------------------
 //----------------------------------------------------------
 // PROGRAMME PRINCIPAL -------------------------------------
@@ -319,14 +331,22 @@ int main(int argc,char** argv)
      }
  }
 
- float pi = recursivePairSum(VctPts, 0, NbInt);
- error = fabs(PI - pi);
+ result = recursivePairSum(VctPts, 0, NbInt);
+ error = fabs(PI - result);
 
  printf("\nQuestion 2 - A:\n");
- printf("PI: %.10f  ", pi);
+ printf("PI: %.10f  ", result);
  printf("Er: %.10f  ", error);
  printf("LogEr: %.10f\n", log(error));
 
+ // QUESTION 2 - B
+ result = kahanSum(VctPts, NbInt + 1);
+ error = fabs(PI- result);
+
+ printf("\nQuestion 2 - B:\n");
+ printf("PI: %.10f  ", result);
+ printf("Er: %.10f  ", error);
+ printf("LogEr: %.10f\n", log(error));
 
  free(VctPts);
  return 0;
