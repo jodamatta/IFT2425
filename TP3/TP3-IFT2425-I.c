@@ -1,7 +1,9 @@
 //------------------------------------------------------
 // module  : Tp-IFT2425-I.c
-// author  : 
-// date    : 
+// author  : Songju Lee (20198117) & Joana da Matta Furtado Ferreira (20288550)
+// songju.lee@umontreal.ca
+// joana.da.matta.furtado.ferreira@umontreal.ca
+// date    : 28/03/2024
 // version : 1.0
 // language: C++
 // note    :
@@ -50,7 +52,7 @@ int open_display()
 
 /************************************************************************/
 /* FABRIQUE_WINDOW()							*/
-/* Cette fonction crée une fenetre X et l'affiche à l'écran.	        */
+/* Cette fonction crï¿½e une fenetre X et l'affiche ï¿½ l'ï¿½cran.	        */
 /************************************************************************/
 Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 {
@@ -94,7 +96,7 @@ Window fabrique_window(char *nom_fen,int x,int y,int width,int height,int zoom)
 
 /****************************************************************************/
 /* CREE_XIMAGE()							    */
-/* Crée une XImage à partir d'un tableau de float                           */
+/* Crï¿½e une XImage ï¿½ partir d'un tableau de float                           */
 /* L'image peut subir un zoom.						    */
 /****************************************************************************/
 XImage* cree_Ximage(float** mat,int z,int length,int width)
@@ -238,6 +240,13 @@ void SaveImagePgm(char* bruit,char* name,float** mat,int lgth,int wdth)
 //---- Fonction Pour TP ---//
 //-------------------------//
 
+float recursivePairSum(float* arr, int left, int right) {
+    if (left == right) return arr[left];
+    if (right - left == 1) return arr[left] + arr[right];
+    int mid = (left + right) / 2;
+    return recursivePairSum(arr, left, mid) + recursivePairSum(arr, mid + 1, right);
+}
+
 //----------------------------------------------------------
 //----------------------------------------------------------
 // PROGRAMME PRINCIPAL -------------------------------------
@@ -282,8 +291,45 @@ int main(int argc,char** argv)
  float* VctPts=fmatrix_allocate_1d(NbInt+1);
 
  //Programmer ici
- 
- 
+ // QUESTION 1
+ float h = 1.0 / NbInt;
+ float sum = 0.0;
+
+ for (int i = 0; i < NbInt; i++){
+     float x_i = i * h;
+     float x_ip1 = (i+1) * h;
+     sum += (4.0 * sqrt(1 - x_i * x_i) + 4.0 * sqrt(1-x_ip1 * x_ip1)) / 2.0;
+ }
+
+ result = h * sum;
+
+ float error = fabs(PI - result);
+ printf("Question 1:\n");
+ printf("PI: %.10f  ", result);
+ printf("Er: %.10f  ", error);
+ printf("LogEr: %10f\n", log(error));
+
+ // QUESTION 2 - A
+ for (int i = 0; i <= NbInt; i++) {
+     float x = i * h;
+     if (i == 0 || i == NbInt) {
+         VctPts[i] = (4.0f * sqrtf(1 - x * x)) * (h / 2.0f); // ExtrÃ©mitÃ©s divisÃ©es par 2
+     } else {
+         VctPts[i] = (4.0f * sqrtf(1 - x * x)) * h;
+     }
+ }
+
+ float pi = recursivePairSum(VctPts, 0, NbInt);
+ error = fabs(PI - pi);
+
+ printf("\nQuestion 2 - A:\n");
+ printf("PI: %.10f  ", pi);
+ printf("Er: %.10f  ", error);
+ printf("LogEr: %.10f\n", log(error));
+
+
+ free(VctPts);
+ return 0;
 
  //End
    
