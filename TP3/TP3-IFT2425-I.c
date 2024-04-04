@@ -310,13 +310,13 @@ int main(int argc,char** argv)
  for (int i = 0; i < NbInt; i++){
      float x_i = i * h;
      float x_ip1 = (i+1) * h;
-     sum += (4.0 * sqrt(1 - x_i * x_i) + 4.0 * sqrt(1-x_ip1 * x_ip1)) / 2.0;
+     sum += (4.0 * sqrt(1 - (x_i * x_i)) + 4.0 * sqrt(1-(x_ip1 * x_ip1))) / 2.0;
  }
 
  result = h * sum;
 
  float error = fabs(PI - result);
- printf("Question 1:\n");
+ printf("[1>Given_Order:]  ");
  printf("PI: %.10f  ", result);
  printf("Er: %.10f  ", error);
  printf("LogEr: %10f\n", log(error));
@@ -334,7 +334,7 @@ int main(int argc,char** argv)
  result = recursivePairSum(VctPts, 0, NbInt);
  error = fabs(PI - result);
 
- printf("\nQuestion 2 - A:\n");
+ printf("\n[2>PairwiseSum:]  ");
  printf("PI: %.10f  ", result);
  printf("Er: %.10f  ", error);
  printf("LogEr: %.10f\n", log(error));
@@ -343,7 +343,7 @@ int main(int argc,char** argv)
  result = kahanSum(VctPts, NbInt + 1);
  error = fabs(PI- result);
 
- printf("\nQuestion 2 - B:\n");
+ printf("\n[3>KahanSummat:]  ");
  printf("PI: %.10f  ", result);
  printf("Er: %.10f  ", error);
  printf("LogEr: %.10f\n", log(error));
