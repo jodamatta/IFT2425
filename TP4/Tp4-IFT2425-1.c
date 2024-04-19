@@ -46,7 +46,7 @@ GC	  gc;
 #define Y_2 -1.0/2.0
 #define X_3 +1.0/2*sqrt(2.0)
 #define Y_3 -1.0/2.0
-#define CONSTANT_C 0.25
+#define C 0.25
 #define R 0.1
 #define D 0.3
 
@@ -357,61 +357,92 @@ void Fill_Pict(float** MatPts,float** MatPict,int PtsNumber,int NbPts)
 //------------------------------------------------
 // FONCTIONS TPs----------------------------------
 //------------------------------------------------
+#define TOL 1e-5
 
-const double A[6] = {0, 1/4, 3/8, 12/13, 1, 1/2};
-const double B[6][5] = {
-        {0},
-        {1/4},
-        {3/32, 9/32},
-        {1932/2197, -7200/2197, 7296/2197},
-        {439/216, -8, 3680/513, -845/4104},
-        {-8/27, 2, -3544/2565, 1859/4104, -11/40}
-};
-const double C[6] = {16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55};
-const double C_STAR[6] = {25/216, 0, 1408/2565, 2197/4104, -1/5, 0};
-
-typedef struct{
-    double x;
-    double y;
-} Vector;
-
-Vector magnets[] = {{0,1}, {-1/sqrt(2),-0.5},{1/sqrt(2),-0.5}};
-
-void derivatives(double t, double state[], double dstate[], int n){
-    double x = state[0];
-    double vx = state[1];
-    double y = state[2];
-    double vy = state[3];
-    double sum_fx = 0.0, sum_fy = 0.0;
-
-    for(int i =0; i< 3; i++){
-        double dx = magnets[i].x - x;
-        double dy = magnets[i].y - y;
-        double dist_cubed = pow(sqrt(dx*dx + dy*dy + D*D), 3);
-        sum_fx += dx/dist_cubed;
-        sum_fy += dy/dist_cubed;
-    }
-
-    dstate[0] = vx; // dx/dt = vx
-    dstate[1] = sum_fx - R *vx - CONSTANT_C; // dvx/dt = sum_fx - R*vx - Cx
-    dstate[2] = vy; // dy/dt = vy;
-    dstate[3] = sum_fy - R * vy - CONSTANT_C; // dvy/dt = sum_fy - R*vy - Cy
+double magnetic_force(double pos, double magnet_pos, double other_coord, double other_magnet_coord) {
+    return (magnet_pos - pos) / pow(sqrt(pow(magnet_pos - pos, 2) + pow(other_magnet_coord - other_coord, 2) + pow(D, 2)), 3);
 }
 
-void rk45_step(void (*derivs)(double, double *, double *, int), double state[], double t, double dt, double new_state[]) {
-    double k[6][4]; // Suppose que l'état a 4 variables: x, vx, y, vy
-    double temp_state[4];
-    int i, j;
+void derivatives(double t, double y[], double dydt[]) {
+    double fx1 = magnetic_force(y[0], X_1, y[1], Y_1);
+    double fx2 = magnetic_force(y[0], X_2, y[1], Y_2);
+    double fx3 = magnetic_force(y[0], X_3, y[1], Y_3);
 
-    // Calcul des k
-    for (i = 0; i < 6; i++) {
-        for (j = 0; j < 4; j++) { // Pour chaque variable dans l'état
-            temp_state[j] = state[j];
-            for (int l = 0; l < i; l++) {
-                temp_state[j] += dt * B[i][l] * k[l][j];
+    double fy1 = magnetic_force(y[1], Y_1, y[0], X_1);
+    double fy2 = magnetic_force(y[1], Y_2, y[0], X_2);
+    double fy3 = magnetic_force(y[1], Y_3, y[0], X_3);
+
+    dydt[0] = y[2]; // dx/dt = vx
+    dydt[1] = y[3]; // dy/dt = vy
+    dydt[2] = -R * y[2] + fx1 + fx2 + fx3 - C; // dvx/dt
+    dydt[3] = -R * y[3] + fy1 + fy2 + fy3 - C; // dvy/dt
+}
+
+void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
+    double h = H; // Start with the maximum step size
+    double t = t0;
+    double dydt[4], k1[4], k2[4], k3[4], k4[4], k5[4], k6[4], y_temp[4], y4[4], y5[4], err;
+
+    int i, j;
+    for (i = 0; i < num_points && t < tf; i++) {
+        derivatives(t, y, dydt);
+        for (j = 0; j < 4; j++) {
+            k1[j] = h * dydt[j];
+            y_temp[j] = y[j] + 0.25 * k1[j];
+        }
+
+        derivatives(t + 0.25 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k2[j] = h * dydt[j];
+            y_temp[j] = y[j] + (3.0/32.0 * k1[j] + 9.0/32.0 * k2[j]);
+        }
+
+        derivatives(t + 3.0/8.0 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k3[j] = h * dydt[j];
+            y_temp[j] = y[j] + (1932.0/2197.0 * k1[j] - 7200.0/2197.0 * k2[j] + 7296.0/2197.0 * k3[j]);
+        }
+
+        derivatives(t + 12.0/13.0 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k4[j] = h * dydt[j];
+            y_temp[j] = y[j] + (439.0/216.0 * k1[j] - 8.0 * k2[j] + 3680.0/513.0 * k3[j] - 845.0/4104.0 * k4[j]);
+        }
+
+        derivatives(t + h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k5[j] = h * dydt[j];
+            y_temp[j] = y[j] - (8.0/27.0 * k1[j] + 2.0 * k2[j] - 3544.0/2565.0 * k3[j] + 1859.0/4104.0 * k4[j] - 11.0/40.0 * k5[j]);
+        }
+
+        derivatives(t + 0.5 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k6[j] = h * dydt[j];
+            y4[j] = y[j] + (25.0/216.0 * k1[j] + 1408.0/2565.0 * k3[j] + 2197.0/4104.0 * k4[j] - 0.2 * k5[j]);
+            y5[j] = y[j] + (16.0/135.0 * k1[j] + 6656.0/12825.0 * k3[j] + 28561.0/56430.0 * k4[j] - 9.0/50.0 * k5[j] + 2.0/55.0 * k6[j]);
+        }
+
+        // Calculate error as the max of differences in each component
+        err = 0.0;
+        for (j = 0; j < 4; j++) {
+            err = fmax(err, fabs(y5[j] - y4[j]));
+        }
+
+        // Adjust step size based on error
+        if (err < TOL) {
+            t += h;
+            for (j = 0; j < 4; j++) {
+                y[j] = y5[j];
+            }
+            if (i < num_points) {
+                MatPts[i][0] = y[0]; // x coordinate
+                MatPts[i][1] = y[1]; // y coordinate
             }
         }
-        derivs(t + A[i] * dt, temp_state, k[i], 4);
+        double delta = 0.84 * pow(TOL / err, 0.25);
+        h = fmin(fmax(delta * h, 0.0001), 0.1);
+
+        if (h < 0.0001) break; // Too small step size, stop integration
     }
 }
 
@@ -452,31 +483,23 @@ int main (int argc, char **argv)
     //Un exemple ou la matrice de points est remplie
     //par une courbe donné par l'équation d'en bas... et non pas par
     //la solution de l'équation différentielle
+    double y[] = {X_1_INI,X_2_INI,X_3_INI,X_4_INI};
 
-    double t0 = 0, tf = 10; // Temps de début et de fin
-    double state[4] = {0, 0, 0, 0}; // Conditions initiales: x, vx, y, vy
-    double dt = 0.01; // Taille initiale du pas de temps
-    double new_state[4], error[4], next_dt;
-
-    // Boucle principale pour l'intégration
-    double t = t0;
-    while (t < tf) {
-        rk45_step(derivatives, state, t, dt, new_state);
-        // Mise à jour de l'état et du temps
-        for (int i = 0; i < 4; i++) {
-            state[i] = new_state[i];
-        }
-        t += dt;
-        dt = next_dt;
-        printf("t: %f, x: %f, y: %f, vx: %f, vy: %f\n", t, state[0], state[2], state[1], state[3]);
-    }
-
-    for(k=0;k<(int)(NB_INTERV);k++)
+    /*for(k=0;k<(int)(NB_INTERV);k++)
     {
         MatPts[k][0]=(k/(float)(NB_INTERV))*cos((k*0.0001)*3.14159);
         //MatPts[k][1]=(k/(float)(NB_INTERV))*sin((k*0.001)*3.14159);
         //>on peut essayer la ligne d'en bas aussi
         MatPts[k][1]=(k/(float)(NB_INTERV))*sin((k*0.0001)*3.14159);
+    }*/
+
+    rkf45(y, T_0, T_F, NB_INTERV, MatPts);
+
+    // Print or process trajectory points
+    for (int i = 0; i < NB_INTERV; i++) {
+        if(i%1000 == 0) {
+            printf("Point %d: (%f, %f)\n", i, MatPts[i][0], MatPts[i][1]);
+        }
     }
 
 
