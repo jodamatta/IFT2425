@@ -357,20 +357,22 @@ void Fill_Pict(float** MatPts,float** MatPict,int PtsNumber,int NbPts)
 //------------------------------------------------
 // FONCTIONS TPs----------------------------------
 //------------------------------------------------
-#define TOL 1e-5
+double magnetic_force_x(double pos_x, double mag_x, double pos_y, double mag_y) {
+    return (mag_x - pos_x) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
+}
 
-double magnetic_force(double pos, double magnet_pos, double other_coord, double other_magnet_coord) {
-    return (magnet_pos - pos) / pow(sqrt(pow(magnet_pos - pos, 2) + pow(other_magnet_coord - other_coord, 2) + pow(D, 2)), 3);
+double magnetic_force_y(double pos_x, double mag_x, double pos_y, double mag_y) {
+    return (mag_y - pos_y) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
 }
 
 void derivatives(double t, double y[], double dydt[]) {
-    double fx1 = magnetic_force(y[0], X_1, y[1], Y_1);
-    double fx2 = magnetic_force(y[0], X_2, y[1], Y_2);
-    double fx3 = magnetic_force(y[0], X_3, y[1], Y_3);
+    double fx1 = magnetic_force_x(y[0], X_1, y[1], Y_1);
+    double fx2 = magnetic_force_x(y[0], X_2, y[1], Y_2);
+    double fx3 = magnetic_force_x(y[0], X_3, y[1], Y_3);
 
-    double fy1 = magnetic_force(y[1], Y_1, y[0], X_1);
-    double fy2 = magnetic_force(y[1], Y_2, y[0], X_2);
-    double fy3 = magnetic_force(y[1], Y_3, y[0], X_3);
+    double fy1 = magnetic_force_x(y[1], Y_1, y[0], X_1);
+    double fy2 = magnetic_force_x(y[1], Y_2, y[0], X_2);
+    double fy3 = magnetic_force_x(y[1], Y_3, y[0], X_3);
 
     dydt[0] = y[2]; // dx/dt = vx
     dydt[1] = y[3]; // dy/dt = vy
@@ -381,7 +383,7 @@ void derivatives(double t, double y[], double dydt[]) {
 void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
     double h = H; // Start with the maximum step size
     double t = t0;
-    double dydt[4], k1[4], k2[4], k3[4], k4[4], k5[4], k6[4], y_temp[4], y4[4], y5[4], err;
+    double dydt[4], k1[4], k2[4], k3[4], k4[4], k5[4], k6[4], y_temp[4];
 
     int i, j;
     for (i = 0; i < num_points && t < tf; i++) {
@@ -418,33 +420,22 @@ void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
         derivatives(t + 0.5 * h, y_temp, dydt);
         for (j = 0; j < 4; j++) {
             k6[j] = h * dydt[j];
-            y4[j] = y[j] + (25.0/216.0 * k1[j] + 1408.0/2565.0 * k3[j] + 2197.0/4104.0 * k4[j] - 0.2 * k5[j]);
-            y5[j] = y[j] + (16.0/135.0 * k1[j] + 6656.0/12825.0 * k3[j] + 28561.0/56430.0 * k4[j] - 9.0/50.0 * k5[j] + 2.0/55.0 * k6[j]);
+            y_temp[j] = y[j] + (16.0/135.0 * k1[j] + 6656.0/12825.0 * k3[j] + 28561.0/56430.0 * k4[j] - 9.0/50.0 * k5[j] + 2.0/55.0 * k6[j]);
         }
 
-        // Calculate error as the max of differences in each component
-        err = 0.0;
+        // Update the state only with the 5th order estimation
         for (j = 0; j < 4; j++) {
-            err = fmax(err, fabs(y5[j] - y4[j]));
+            y[j] = y_temp[j];
         }
 
-        // Adjust step size based on error
-        if (err < TOL) {
-            t += h;
-            for (j = 0; j < 4; j++) {
-                y[j] = y5[j];
-            }
-            if (i < num_points) {
-                MatPts[i][0] = y[0]; // x coordinate
-                MatPts[i][1] = y[1]; // y coordinate
-            }
-        }
-        double delta = 0.84 * pow(TOL / err, 0.25);
-        h = fmin(fmax(delta * h, 0.0001), 0.1);
+        // Store results
+        MatPts[i][0] = y[0]; // x coordinate
+        MatPts[i][1] = y[1]; // y coordinate
 
-        if (h < 0.0001) break; // Too small step size, stop integration
+        t += h;  // Advance time by step size h
     }
 }
+
 
 //----------------------------------------------------------
 //----------------------------------------------------------
@@ -483,7 +474,7 @@ int main (int argc, char **argv)
     //Un exemple ou la matrice de points est remplie
     //par une courbe donné par l'équation d'en bas... et non pas par
     //la solution de l'équation différentielle
-    double y[] = {X_1_INI,X_2_INI,X_3_INI,X_4_INI};
+    double y[] = {0.2,-1.6,0.05,1};
 
     /*for(k=0;k<(int)(NB_INTERV);k++)
     {
