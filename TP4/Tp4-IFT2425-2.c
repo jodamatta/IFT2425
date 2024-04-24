@@ -1,6 +1,8 @@
 //------------------------------------------------------
 // module  : Tp4-IFT2425-2.c
-// author  :
+// author  : Songju Lee (20198117) & Joana da Matta Furtado Ferreira (20288550)
+// songju.lee@umontreal.ca
+// joana.da.matta.furtado.ferreira@umontreal.ca
 // date    :
 // version : 1.0
 // language: C++
@@ -473,7 +475,88 @@ void Fill_Pict(float** MatPts,float** MatPict,int PtsNumber,int NbPts)
 //------------------------------------------------
 // FONCTIONS TPs----------------------------------
 //------------------------------------------------
+double magnetic_force_x(double pos_x, double mag_x, double pos_y, double mag_y) {
+    return (mag_x - pos_x) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
+}
 
+double magnetic_force_y(double pos_x, double mag_x, double pos_y, double mag_y) {
+    return (mag_y - pos_y) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
+}
+
+void derivatives(double t, double y[], double dydt[]) {
+    double fx1 = magnetic_force_x(y[0], X_1, y[1], Y_1);
+    double fx2 = magnetic_force_x(y[0], X_2, y[1], Y_2);
+    double fx3 = magnetic_force_x(y[0], X_3, y[1], Y_3);
+
+    double fy1 = magnetic_force_x(y[1], Y_1, y[0], X_1);
+    double fy2 = magnetic_force_x(y[1], Y_2, y[0], X_2);
+    double fy3 = magnetic_force_x(y[1], Y_3, y[0], X_3);
+
+    dydt[0] = y[2]; // dx/dt = vx
+    dydt[1] = y[3]; // dy/dt = vy
+    dydt[2] = -R * y[2] + fx1 + fx2 + fx3 - C; // dvx/dt
+    dydt[3] = -R * y[3] + fy1 + fy2 + fy3 - C; // dvy/dt
+}
+
+void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
+    double h = H; // Start with the maximum step size
+    double t = t0;
+    double dydt[4], k1[4], k2[4], k3[4], k4[4], k5[4], k6[4], y_temp[4];
+
+    int i, j;
+    for (i = 0; i < num_points && t < tf; i++) {
+        derivatives(t, y, dydt);
+        for (j = 0; j < 4; j++) {
+            k1[j] = h * dydt[j];
+            y_temp[j] = y[j] + 0.25 * k1[j];
+        }
+
+        derivatives(t + 0.25 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k2[j] = h * dydt[j];
+            y_temp[j] = y[j] + (3.0/32.0 * k1[j] + 9.0/32.0 * k2[j]);
+        }
+
+        derivatives(t + 3.0/8.0 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k3[j] = h * dydt[j];
+            y_temp[j] = y[j] + (1932.0/2197.0 * k1[j] - 7200.0/2197.0 * k2[j] + 7296.0/2197.0 * k3[j]);
+        }
+
+        derivatives(t + 12.0/13.0 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k4[j] = h * dydt[j];
+            y_temp[j] = y[j] + (439.0/216.0 * k1[j] - 8.0 * k2[j] + 3680.0/513.0 * k3[j] - 845.0/4104.0 * k4[j]);
+        }
+
+        derivatives(t + h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k5[j] = h * dydt[j];
+            y_temp[j] = y[j] - (8.0/27.0 * k1[j] + 2.0 * k2[j] - 3544.0/2565.0 * k3[j] + 1859.0/4104.0 * k4[j] - 11.0/40.0 * k5[j]);
+        }
+
+        derivatives(t + 0.5 * h, y_temp, dydt);
+        for (j = 0; j < 4; j++) {
+            k6[j] = h * dydt[j];
+            y_temp[j] = y[j] + (16.0/135.0 * k1[j] + 6656.0/12825.0 * k3[j] + 28561.0/56430.0 * k4[j] - 9.0/50.0 * k5[j] + 2.0/55.0 * k6[j]);
+        }
+
+        // Update the state only with the 5th order estimation
+        for (j = 0; j < 4; j++) {
+            y[j] = y_temp[j];
+        }
+
+        // Store results
+        MatPts[i][0] = y[0]; // x coordinate
+        MatPts[i][1] = y[1]; // y coordinate
+
+        t += h;  // Advance time by step size h
+    }
+}
+
+int aiment_proche (float a, float b, float a_0, float b_0) {
+    return fabs(a - a_0) + fabs(b - b_0);
+}
 
 //----------------------------------------------------------
 //----------------------------------------------------------
@@ -519,6 +602,31 @@ int main (int argc, char **argv)
     //Un exemple ou la matrice de points MatPict est remplie
     //par une image en niveaux de gris  donné par l'équation d'en bas... et non pas par
     //la vitesse de convergence
+    for (i = 0 < HEIGHT; i++) {
+        for (j = 0; j < WIDTH; j++) {
+            double x = j/(float)WIDTH * MAX_X - MAX_X/2;
+            double y = (1-i/(float)HEIGHT) * MAX_Y - MAX_Y/2;
+
+            double vitesse_x = 0;
+            double vitesse_y = 0;
+
+            int convergence = 0;
+            int aiment_proche = 0;
+
+            float x_tab[2] = [X_1, X_2, X_3];
+            float y_tab[2] = [Y_1, Y_2, Y_3];
+
+            for (k = 1; k < (int)(NB_INTERV); k++) {
+                vitesse_x = rkf45(y[], x, y, vitesse_x, MatPts);
+                vitesse_y = rkf45(y[], x, y, vitesse_y, MatPts);
+
+                if (aiment_proche(x, y, x_tab[0]) < 0.5) {
+                    
+                }
+                
+            }
+        }
+    }
 
     for(k=0;k<TROIS;k++) for(i=0;i<HEIGHT;i++) for(j=0;j<WIDTH;j++)
             {  MatPict[0][i][j]=(i+j*k*i)%255;

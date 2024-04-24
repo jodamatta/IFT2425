@@ -1,6 +1,8 @@
 //------------------------------------------------------
 // module  : Tp4-IFT2425-1.c
-// author  :
+// author  : Songju Lee (20198117) & Joana da Matta Furtado Ferreira (20288550)
+// songju.lee@umontreal.ca
+// joana.da.matta.furtado.ferreira@umontreal.ca
 // date    :
 // version : 1.0
 // language: C++
