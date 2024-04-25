@@ -52,6 +52,11 @@ GC	  gc;
 #define C 0.25
 #define R 0.1
 #define D 0.3
+#define DIST_THRESHOLD 0.5
+#define CONSECUTIVE_STEPS 20
+#define MAX_STEPS 1000
+#define X_MIN -2.0
+#define Y_MIN -2.0
 
 
 //-Cst-Runge-Kutta
@@ -479,10 +484,6 @@ double magnetic_force_x(double pos_x, double mag_x, double pos_y, double mag_y) 
     return (mag_x - pos_x) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
 }
 
-double magnetic_force_y(double pos_x, double mag_x, double pos_y, double mag_y) {
-    return (mag_y - pos_y) / pow(sqrt(pow(mag_x - pos_x, 2) + pow(mag_y - pos_y, 2) + pow(D, 2)), 3);
-}
-
 void derivatives(double t, double y[], double dydt[]) {
     double fx1 = magnetic_force_x(y[0], X_1, y[1], Y_1);
     double fx2 = magnetic_force_x(y[0], X_2, y[1], Y_2);
@@ -554,16 +555,22 @@ void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
     }
 }
 
-int aiment_proche (double x, double y, double distance) {
-    if (fabs(X_1 - x) + fabs(Y_1 -y) < distance) {
+
+int check_proximity (double x, double y) {
+    if (fabs(X_1 - x) < DIST_THRESHOLD && fabs(Y_1 -y) < DIST_THRESHOLD) {
         return 1;
     }
-    if (fabs(X_2 - x) + fabs(Y_2 -y) < distance) {
-        return 2;
+    if (fabs(X_2 - x) < DIST_THRESHOLD && fabs(Y_2 -y) < DIST_THRESHOLD) {
+        return 1;
     }
-    if (fabs(X_3 - x) + fabs(Y_3 -y) < distance) {
-        return 3;
+    if (fabs(X_3 - x) < DIST_THRESHOLD && fabs(Y_3 -y) < DIST_THRESHOLD) {
+        return 1;
     }
+    return 0;
+}
+
+double distance_L1(double x, double y, double x_target, double y_target) {
+    return fabs(x - x_target) + fabs(y - y_target);
 }
 
 //----------------------------------------------------------
@@ -571,27 +578,26 @@ int aiment_proche (double x, double y, double distance) {
 // MAIN
 //----------------------------------------------------------
 //----------------------------------------------------------
-int main (int argc, char **argv)
-{
-    int i,j,k;
+int main (int argc, char **argv) {
+    int i, j, k;
     int flag_graph;
     int zoom;
 
     XEvent ev;
     Window win_ppicture;
     XImage *x_ppicture;
-    char   nomfen_ppicture[100];
+    char nomfen_ppicture[100];
     char BufSystVisu[100];
 
     //>AllocMemory
-    float*** MatPict=dmatrix_allocate_3d(TROIS,HEIGHT,WIDTH);
-    float** MatPts=dmatrix_allocate_2d((int)(NB_INTERV),2);
+    float ***MatPict = dmatrix_allocate_3d(TROIS, HEIGHT, WIDTH);
+    float **MatPts = dmatrix_allocate_2d((int) (NB_INTERV), 2);
 
     //>Init
-    for(k=0;k<TROIS;k++) for(i=0;i<HEIGHT;i++) for(j=0;j<WIDTH;j++) MatPict[k][i][j]=0;
-    for(i=0;i<2;i++) for(j=0;j<(int)(NB_INTERV);j++) MatPts[i][j]=0.0;
-    flag_graph=1;
-    zoom=1;
+    for (k = 0; k < TROIS; k++) for (i = 0; i < HEIGHT; i++) for (j = 0; j < WIDTH; j++) MatPict[k][i][j] = 0;
+    for (i = 0; i < 2; i++) for (j = 0; j < (int) (NB_INTERV); j++) MatPts[i][j] = 0.0;
+    flag_graph = 1;
+    zoom = 1;
 
 
     //---------------------------------------------------------------------
@@ -604,52 +610,62 @@ int main (int argc, char **argv)
     //par une image couleur donné par l'équation d'en bas... et non pas par
     //les bassins d'attractions
 
-    //for(k=0;k<TROIS;k++) for(i=0;i<HEIGHT;i++) for(j=0;j<WIDTH;j++)
-    //   {  MatPict[k][i][j]=(i+j*k*i)%255; }
-
     //Un exemple ou la matrice de points MatPict est remplie
     //par une image en niveaux de gris  donné par l'équation d'en bas... et non pas par
     //la vitesse de convergence
-    for (i = 0 < HEIGHT; i++) {
-        for (j = 0; j < WIDTH; j++) {
-            double x = j/(float)WIDTH * MAX_X - MAX_X/2;
-            double y = (1-i/(float)HEIGHT) * MAX_Y - MAX_Y/2;
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            double initial_conditions[4] = {i,j,0,0};
+            rkf45(initial_conditions, T_0, T_F, NB_INTERV, MatPts);
 
-            int convergence = 0;
-            int convergence_Max = 20;
+            int convergence_count = 0;
+            int total_count = 0;
+            for(int i = 0; i < NB_INTERV; i++){
+                total_count++;
+                if(check_proximity(MatPts[i][0], MatPts[i][1]) == 1){
+                    convergence_count++;
+                    if(convergence_count >= 20){
+                        printf("convergence found at %d\n", total_count);
+                        if(total_count < 60){
+                            MatPict[0][i][j] = BLACK;
+                            MatPict[1][i][j] = BLACK;
+                            MatPict[2][i][j] = BLACK;
 
-            double distance = 0.5;
-
-            int aiment = 0;
-
-            float x_tab[2] = [X_1, X_2, X_3];
-            float y_tab[2] = [Y_1, Y_2, Y_3];
-
-            for (k = 1; k < (int)(NB_INTERV); k++) {
-                double vitesse_x = rkf45(y[], x, y, vitesse_x, MatPts);
-                double vitesse_y = rkf45(y[], x, y, vitesse_y, MatPts);
-
-                int aiment = aiment_proche(x_tmp, y_tmp, 0.5);
-
-                if (aiment){
-                    convergence++;
-
-                    if (convergence >= convergence_Max) {
-                        return k;
-                    } else {
-                        convergence = 0;
+                            break;
+                        }
+                        else if (total_count < 100){
+                            MatPict[0][i][j] = GREYDARK;
+                            MatPict[1][i][j] = GREYDARK;
+                            MatPict[2][i][j] = GREYDARK;
+                            break;
+                        }
+                        else if (total_count < 140){
+                            MatPict[0][i][j] = GREY;
+                            MatPict[1][i][j] = GREY;
+                            MatPict[2][i][j] = GREY;
+                            break;
+                        }
+                        else if (total_count < 180){
+                            MatPict[0][i][j] = GREYWHITE;
+                            MatPict[1][i][j] = GREYWHITE;
+                            MatPict[2][i][j] = GREYWHITE;
+                            break;
+                        } else{
+                            MatPict[0][i][j] = WHITE;
+                            MatPict[1][i][j] = WHITE;
+                            MatPict[2][i][j] = WHITE;
+                            break;
+                        }
                     }
-                }                  
-            }   
+                } else {
+                    convergence_count = 0;
+                }
+            }
+            MatPict[0][i][j] = WHITE;
+            MatPict[1][i][j] = WHITE;
+            MatPict[2][i][j] = WHITE;
         }
     }
-}
-
-    for(k=0;k<TROIS;k++) for(i=0;i<HEIGHT;i++) for(j=0;j<WIDTH;j++)
-            {  MatPict[0][i][j]=(i+j*k*i)%255;
-                MatPict[1][i][j]=(i+j*k*i)%255;
-                MatPict[2][i][j]=(i+j*k*i)%255;  }
-
 
     //--Fin Question 2-----------------------------------------------------
 

@@ -488,14 +488,6 @@ int main (int argc, char **argv)
 
     rkf45(y, T_0, T_F, NB_INTERV, MatPts);
 
-    // Print or process trajectory points
-    for (int i = 0; i < NB_INTERV; i++) {
-        if(i%1000 == 0) {
-            printf("Point %d: (%f, %f)\n", i, MatPts[i][0], MatPts[i][1]);
-        }
-    }
-
-
     //--Fin Question 1-----------------------------------------------------
 
 
