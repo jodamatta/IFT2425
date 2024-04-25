@@ -554,8 +554,16 @@ void rkf45(double y[], double t0, double tf, int num_points, float** MatPts) {
     }
 }
 
-int aiment_proche (float a, float b, float a_0, float b_0) {
-    return fabs(a - a_0) + fabs(b - b_0);
+int aiment_proche (double x, double y, double distance) {
+    if (fabs(X_1 - x) + fabs(Y_1 -y) < distance) {
+        return 1;
+    }
+    if (fabs(X_2 - x) + fabs(Y_2 -y) < distance) {
+        return 2;
+    }
+    if (fabs(X_3 - x) + fabs(Y_3 -y) < distance) {
+        return 3;
+    }
 }
 
 //----------------------------------------------------------
@@ -607,26 +615,35 @@ int main (int argc, char **argv)
             double x = j/(float)WIDTH * MAX_X - MAX_X/2;
             double y = (1-i/(float)HEIGHT) * MAX_Y - MAX_Y/2;
 
-            double vitesse_x = 0;
-            double vitesse_y = 0;
-
             int convergence = 0;
-            int aiment_proche = 0;
+            int convergence_Max = 20;
+
+            double distance = 0.5;
+
+            int aiment = 0;
 
             float x_tab[2] = [X_1, X_2, X_3];
             float y_tab[2] = [Y_1, Y_2, Y_3];
 
             for (k = 1; k < (int)(NB_INTERV); k++) {
-                vitesse_x = rkf45(y[], x, y, vitesse_x, MatPts);
-                vitesse_y = rkf45(y[], x, y, vitesse_y, MatPts);
+                double vitesse_x = rkf45(y[], x, y, vitesse_x, MatPts);
+                double vitesse_y = rkf45(y[], x, y, vitesse_y, MatPts);
 
-                if (aiment_proche(x, y, x_tab[0]) < 0.5) {
-                    
-                }
-                
-            }
+                int aiment = aiment_proche(x_tmp, y_tmp, 0.5);
+
+                if (aiment){
+                    convergence++;
+
+                    if (convergence >= convergence_Max) {
+                        return k;
+                    } else {
+                        convergence = 0;
+                    }
+                }                  
+            }   
         }
     }
+}
 
     for(k=0;k<TROIS;k++) for(i=0;i<HEIGHT;i++) for(j=0;j<WIDTH;j++)
             {  MatPict[0][i][j]=(i+j*k*i)%255;
