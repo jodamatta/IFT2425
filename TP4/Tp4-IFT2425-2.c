@@ -620,50 +620,48 @@ int main (int argc, char **argv) {
 
             int convergence_count = 0;
             int total_count = 0;
+            int color_set = 0;
             for(int k = 0; k < NB_INTERV; k++){
                 total_count++;
                 if(check_proximity(MatPts[k][0], MatPts[k][1]) == 1){
                     convergence_count++;
                     if(convergence_count >= 20){
-                        printf("convergence found at %d\n", total_count);
                         if(total_count < 60){
                             MatPict[0][i][j] = BLACK;
                             MatPict[1][i][j] = BLACK;
                             MatPict[2][i][j] = BLACK;
-
-                            break;
                         }
                         else if (total_count < 100){
                             MatPict[0][i][j] = GREYDARK;
                             MatPict[1][i][j] = GREYDARK;
                             MatPict[2][i][j] = GREYDARK;
-                            break;
                         }
                         else if (total_count < 140){
                             MatPict[0][i][j] = GREY;
                             MatPict[1][i][j] = GREY;
                             MatPict[2][i][j] = GREY;
-                            break;
                         }
                         else if (total_count < 180){
                             MatPict[0][i][j] = GREYWHITE;
                             MatPict[1][i][j] = GREYWHITE;
                             MatPict[2][i][j] = GREYWHITE;
-                            break;
                         } else{
                             MatPict[0][i][j] = WHITE;
                             MatPict[1][i][j] = WHITE;
                             MatPict[2][i][j] = WHITE;
-                            break;
                         }
+                        color_set = 1;
+                        break;
                     }
                 } else {
                     convergence_count = 0;
                 }
             }
-            MatPict[0][i][j] = WHITE;
-            MatPict[1][i][j] = WHITE;
-            MatPict[2][i][j] = WHITE;
+            if(!color_set){
+                MatPict[0][i][j] = WHITE;
+                MatPict[1][i][j] = WHITE;
+                MatPict[2][i][j] = WHITE;
+            }
         }
     }
 
