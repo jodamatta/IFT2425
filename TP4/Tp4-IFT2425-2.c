@@ -620,9 +620,9 @@ int main (int argc, char **argv) {
 
             int convergence_count = 0;
             int total_count = 0;
-            for(int i = 0; i < NB_INTERV; i++){
+            for(int k = 0; k < NB_INTERV; k++){
                 total_count++;
-                if(check_proximity(MatPts[i][0], MatPts[i][1]) == 1){
+                if(check_proximity(MatPts[k][0], MatPts[k][1]) == 1){
                     convergence_count++;
                     if(convergence_count >= 20){
                         printf("convergence found at %d\n", total_count);
